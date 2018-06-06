@@ -1,0 +1,31 @@
+{
+  "name": "container-server",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "dev": "nodemon --ignore ./files index.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "async-file": "^2.0.2",
+    "body-parser": "^1.18.3",
+    "bunyan": "^1.8.12",
+    "child_process": "^1.0.2",
+    "docker-file-parser": "^1.0.3",
+    "docker-hub-api": "^0.6.0",
+    "dotenv": "^5.0.1",
+    "express": "^4.16.3",
+    "formidable": "^1.2.1",
+    "http-status-codes": "^1.3.0",
+    "md5": "^2.2.1",
+    "morgan": "^1.9.0",
+    "node-docker-api": "^1.1.22",
+    "tar-fs": "^1.16.2",
+    "unzip": "^0.1.11",
+    "util": "^0.10.3"
+  }
+}
