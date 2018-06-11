@@ -1,8 +1,6 @@
-;('use strict')
+'use strict';
 var express = require('express')
-var router = express.Router()
 var log = require('bunyan').getLogger('container')
-var error = require('../error.js')
 var fs = require('fs')
 var asyncFs = require('async-file')
 var formidable = require('formidable')
@@ -16,6 +14,7 @@ const execSync = require('child_process').execSync
 var HttpStatus = require('http-status-codes')
 
 const docker = new Docker()
+var router = express.Router()
 
 function parsedDockerfileContent (data) {
   let commands = dockerParser.parse(data, { includeComments: false })
@@ -126,13 +125,12 @@ router.post('/build-archive', async function (req, res) {
 })
 
 router.post('/build-repository', async function (
-  { body: { source_url, branch, username, password, repository, tag } },
+  { body: { source_url, branch, registry, username, password } },
   res
 ) {
   const uploadDir = 'files/'
 
   try {
-    let fullTag = `${username}/${repository}:${tag}`
     var sha = execSync(`git ls-remote -h ${source_url} -t ${branch} | cut -f 1`)
     var contentPath = `${uploadDir}${sha.toString().trim()}`
 
@@ -142,6 +140,12 @@ router.post('/build-repository', async function (
         `git clone --recursive -b ${branch} ${source_url} ${contentPath}`
       )
     }
+    
+    let imageConfiguration = JSON.parse(
+      await asyncFs.readFile(`${contentPath}/wyliodrin.json`, 'utf8')
+    )
+    let fullTag = `${username}/${imageConfiguration.repository}:${imageConfiguration.tag}`
+    
     await fixDockerfile(`${contentPath}/Dockerfile`)
 
     let tarStream = tar.pack(`${contentPath}`)
@@ -149,7 +153,7 @@ router.post('/build-repository', async function (
 
     await promisifyStream(stream)
 
-    execSync(`docker login -u ${username} -p ${password}`)
+    execSync(`docker login -u ${username} -p ${password} ${registry}`)
 
     let code = execSync(`docker push ${fullTag}`)
     log.info(code.toString())
